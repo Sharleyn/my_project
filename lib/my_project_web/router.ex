@@ -28,6 +28,8 @@ defmodule MyProjectWeb.Router do
 
     live "/dashboards/:id", DashboardLive.Show, :show
     live "/dashboards/:id/show/edit", DashboardLive.Show, :edit
+
+    live "/user", UserDashboardLive
   end
 
   # Other scopes may use custom stacks.
@@ -84,10 +86,30 @@ defmodule MyProjectWeb.Router do
     live "/dashboard", AdminDashboardLive, :index
   end
 
+  scope "/admin", MyProjectWeb do
+    pipe_through :browser
+
+    live "/", AdminDashboardLive, :index
+    live "/menu1", AdminMenu1Live
+    live "/menu2", AdminMenu2Live
+    live "/menu3", AdminMenu3Live
+
+  end
+
   scope "/users", MyProjectWeb do
     pipe_through [:browser, :require_authenticated_user, :user_only]
 
     live "/dashboard", UserDashboardLive, :index
+  end
+
+  scope "/users", MyProjectWeb do
+    pipe_through :browser
+
+    live "/", UserDashboardLive, :index
+    live "/menu1", UserMenu1Live
+    live "/menu2", UserMenu2Live
+    live "/menu3", UserMenu3Live
+
   end
 
   scope "/", MyProjectWeb do
