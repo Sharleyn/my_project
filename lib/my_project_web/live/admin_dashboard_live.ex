@@ -29,28 +29,63 @@ defmodule MyProjectWeb.AdminDashboardLive do
     ]
 
     # ✅ Hanya satu return di sini
+    peserta_diterima = [
+      %{id: 1, nama: "Ali Bin Ahmad", email: "ali@example.com"},
+      %{id: 2, nama: "Siti Nurhaliza", email: "siti@example.com"},
+      %{id: 3, nama: "John Doe", email: "john@example.com"},
+      %{id: 4, nama: "Liyana Zain", email: "liyana@example.com"},
+      %{id: 5, nama: "Ahmad Zulkifli", email: "zul@example.com"},
+      %{id: 6, nama: "Zulkifli", email: "zulkifli@example.com"},
+      %{id: 7, nama: "Faizal Ramli", email: "faizal@example.com"}
+    ]
+
     {:ok,
      socket
      |> assign(:menus, menus)
      |> assign(:selected_menu, "dashboard")
-     |> assign(:sidebar_open, true)}  # sidebar buka pada awal
+     |> assign(:sidebar_open, true)
+     |> assign(:peserta_diterima, peserta_diterima)
+     |> assign(:page, 1)
+     |> assign(:per_page, 5)
+     |> assign(:total_diterima, length(peserta_diterima))
+     |> assign(:peserta_diterima, Enum.slice(peserta_diterima, 0, 5))} # page 1 = peserta 1 hingga 5}
   end
 
+  def handle_params(%{"menu" => "diterima", "page" => page}, _uri, socket) do
+    page = String.to_integer(page || "1")
+    per_page = socket.assigns.per_page || 5
 
+    semua_peserta = [
+      %{id: 1, nama: "Ali Bin Ahmad", email: "ali@example.com"},
+      %{id: 2, nama: "Siti Nurhaliza", email: "siti@example.com"},
+      %{id: 3, nama: "John Doe", email: "john@example.com"},
+      %{id: 4, nama: "Liyana Zain", email: "liyana@example.com"},
+      %{id: 5, nama: "Ahmad Zulkifli", email: "zul@example.com"},
+      %{id: 6, nama: "Zulkifli", email: "zulkifli@example.com"},
+      %{id: 7, nama: "Faizal Ramli", email: "faizal@example.com"}
+    ]
 
+    peserta = Enum.slice(semua_peserta, (page - 1) * per_page, per_page)
+    total = length(semua_peserta)
 
+    {:noreply,
+     socket
+     |> assign(:selected_menu, "diterima")
+     |> assign(:peserta_diterima, peserta)
+     |> assign(:page, page)
+     |> assign(:per_page, per_page)
+     |> assign(:total_diterima, total)}
+  end
 
-    def handle_params(%{"menu" => menu}, _uri, socket) do
-      {:noreply, assign(socket, :selected_menu, menu)}
-    end
-
-    def handle_params(_, _uri, socket) do
-      {:noreply, assign(socket, :selected_menu, "dashboard")}
-    end
+  def handle_params(%{"menu" => menu}, _uri, socket) do
+    {:noreply, assign(socket, :selected_menu, menu)}
+  end
 
     def handle_event("toggle_sidebar", _, socket) do
       {:noreply, update(socket, :sidebar_open, &(!&1))}
     end
+
+
 
 
     def render(assigns) do
@@ -96,7 +131,7 @@ defmodule MyProjectWeb.AdminDashboardLive do
         <%= for child <- menu.children do %>
         <li>
         <.link patch={child.path}
-        class={"block px-3 py-1 rounded-md text-sm text-white transition hover:bg-[#1a3b5f] #{if @selected_menu == child.id, do: "bg-white text-[#0a2540] font-semibold", else: ""}"}>
+        class={"block px-3 py-1 rounded-md text-sm text-white transition hover:bg-[#1a3b5f] #{if @selected_menu == child.id, do: "bg-[#132d4f] text-[#0a2540] font-semibold", else: ""}"}>
         <%= child.label %>
         </.link>
         </li>
@@ -137,8 +172,45 @@ defmodule MyProjectWeb.AdminDashboardLive do
               <% "diterima" -> %>
                 <section>
                 <h2 class="text-2xl font-bold mb-4">Diterima</h2>
-                <p>Maklumat peserta yang telah diterima</p>
-                </section>
+
+                 <!-- ✅ Jadual peserta -->
+                <%= if @peserta_diterima != [] do %>
+                <table class="min-w-full bg-white border border-gray-200 shadow-sm">
+                <thead>
+                <tr class="bg-gray-100 text-left text-sm font-semibold text-gray-700">
+                <th class="px-4 py-2 border-b">#</th>
+                <th class="px-4 py-2 border-b">Nama</th>
+                <th class="px-4 py-2 border-b">Emel</th>
+                </tr>
+                </thead>
+                <tbody>
+                <%= for {peserta, index} <- Enum.with_index(@peserta_diterima, 1) do %>
+                <tr class="hover:bg-gray-50 text-sm">
+                <td class="px-4 py-2 border-b"><%= index %></td>
+                <td class="px-4 py-2 border-b"><%= peserta.nama %></td>
+                <td class="px-4 py-2 border-b"><%= peserta.email %></td>
+                </tr>
+                <% end %>
+                </tbody>
+                </table>
+                <% else %>
+                <p class="text-gray-500">Tiada peserta diterima buat masa ini.</p>
+                <% end %>
+
+
+                <!-- ✅ Pagination -->
+                <div class="flex justify-center mt-6 space-x-2">
+                <%= if @page > 1 do %>
+                <.link patch={"?menu=diterima&page=#{@page - 1}"} class="px-4 py-2 border rounded hover:bg-gray-100">← Sebelum</.link>
+                <% end %>
+
+                <span class="px-4 py-2 border rounded bg-gray-100">Page <%= @page %></span>
+
+                <%= if @page * @per_page < @total_diterima do %>
+                <.link patch={"?menu=diterima&page=#{@page + 1}"} class="px-4 py-2 border rounded hover:bg-gray-100">Seterusnya →</.link>
+                <% end %>
+                </div>
+                 </section>
 
                 <% "ditolak" -> %>
                 <section>
