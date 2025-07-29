@@ -86,8 +86,6 @@ defmodule MyProjectWeb.AdminDashboardLive do
     end
 
 
-
-
     def render(assigns) do
       ~H"""
       <div>
@@ -110,7 +108,7 @@ defmodule MyProjectWeb.AdminDashboardLive do
         <!-- 🔁 Butang tutup -->
         <div class="p-4">
         <button phx-click="toggle_sidebar" class="text-white bg-[#0a2540] p-2 rounded-md">
-        ✕
+        ☰
         </button>
         </div>
 
@@ -184,9 +182,9 @@ defmodule MyProjectWeb.AdminDashboardLive do
                 </tr>
                 </thead>
                 <tbody>
-                <%= for {peserta, index} <- Enum.with_index(@peserta_diterima, 1) do %>
+                <%= for {peserta, index} <- Enum.with_index(@peserta_diterima, 0) do %>
                 <tr class="hover:bg-gray-50 text-sm">
-                <td class="px-4 py-2 border-b"><%= index %></td>
+                <td class="px-4 py-2 border-b"><%= ((@page - 1) * @per_page) + index + 1 %></td>
                 <td class="px-4 py-2 border-b"><%= peserta.nama %></td>
                 <td class="px-4 py-2 border-b"><%= peserta.email %></td>
                 </tr>
