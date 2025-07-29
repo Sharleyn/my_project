@@ -57,7 +57,7 @@ defmodule MyProjectWeb.UserDashboardLive do
         <aside class="fixed top-0 left-0 h-screen w-64 bg-[#0a2540] text-white z-50 shadow-lg transition-transform duration-300 lg:translate-x-0">
          <!-- 🔁 Tajuk -->
         <div class="p-6 text-xl font-semibold tracking-wide border-b border-white/10">
-        Admin Panel
+        User Panel
         </div>
 
         <!-- 🔁 Butang tutup -->
@@ -84,7 +84,7 @@ defmodule MyProjectWeb.UserDashboardLive do
         <%= for child <- menu.children do %>
         <li>
         <.link patch={child.path}
-        class={"block px-3 py-1 rounded-md text-sm text-white transition hover:bg-[#1a3b5f] #{if @selected_menu == child.id, do: "bg-white text-[#0a2540] font-semibold", else: ""}"}>
+        class={"block px-3 py-1 rounded-md text-sm text-white transition hover:bg-[#1a3b5f] #{if @selected_menu == child.id, do: "bg-[#132d4f] text-[#0a2540] font-semibold", else: ""}"}>
         <%= child.label %>
         </.link>
         </li>
