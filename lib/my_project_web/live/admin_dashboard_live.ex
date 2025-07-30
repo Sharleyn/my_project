@@ -81,6 +81,11 @@ defmodule MyProjectWeb.AdminDashboardLive do
     {:noreply, assign(socket, :selected_menu, menu)}
   end
 
+  def handle_params(%{}, _uri, socket) do
+    {:noreply, assign(socket, :selected_menu, "dashboard")}
+  end
+
+
     def handle_event("toggle_sidebar", _, socket) do
       {:noreply, update(socket, :sidebar_open, &(!&1))}
     end
