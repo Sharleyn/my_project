@@ -36,7 +36,8 @@ defmodule MyProjectWeb.AdminDashboardLive do
       %{id: 4, nama: "Liyana Zain", email: "liyana@example.com", status: "Admin"},
       %{id: 5, nama: "Ahmad Zulkifli", email: "zul@example.com", status: "Admin"},
       %{id: 6, nama: "Zulkifli", email: "zulkifli@example.com", status: "User"},
-      %{id: 7, nama: "Faizal Ramli", email: "faizal@example.com", status: "Admin"}
+      %{id: 7, nama: "Faizal Ramli", email: "faizal@example.com", status: "Admin"},
+      %{id: 7, nama: "Maizatul Akmal Nisa", email: "Maizatul@example.com", status: "User"}
     ]
 
     {:ok,
@@ -65,7 +66,8 @@ defmodule MyProjectWeb.AdminDashboardLive do
       %{id: 4, nama: "Liyana Zain", email: "liyana@example.com", status: "Admin"},
       %{id: 5, nama: "Ahmad Zulkifli", email: "zul@example.com", status: "Admin"},
       %{id: 6, nama: "Zulkifli", email: "zulkifli@example.com", status: "User"},
-      %{id: 7, nama: "Faizal Ramli", email: "faizal@example.com", status: "Admin"}
+      %{id: 7, nama: "Faizal Ramli", email: "faizal@example.com", status: "Admin"},
+      %{id: 7, nama: "Maizatul Akmal Nisa", email: "Maizatul@example.com", status: "User"}
     ]
 
     peserta = Enum.slice(semua_peserta, (page - 1) * per_page, per_page)
