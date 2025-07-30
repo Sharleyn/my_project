@@ -84,6 +84,7 @@ defmodule MyProjectWeb.AdminDashboardLive do
   def handle_params(%{"menu" => "diterima", "page" => page}, _uri, socket) do
     page = String.to_integer(page || "1")
     per_page = socket.assigns.per_page || 5
+    filter = socket.assigns.filter || ""
 
     semua_peserta = [
       %{id: 1, nama: "Ali Bin Ahmad", email: "ali@example.com", status: "Admin"},
@@ -104,8 +105,12 @@ defmodule MyProjectWeb.AdminDashboardLive do
       %{id: 16, nama: "Maizatul binti Amin", email: "Maizatulamin@example.com", status: "User"}
     ]
 
-    peserta = Enum.slice(semua_peserta, (page - 1) * per_page, per_page)
-    total = length(semua_peserta)
+    semua = socket.assigns.semua_peserta
+    tapis = if filter == "", do: semua, else: Enum.filter(semua, &(&1.status == filter))
+
+
+    peserta = Enum.slice(tapis, (page - 1) * per_page, per_page)
+    total = length(tapis)
 
     {:noreply,
      socket
