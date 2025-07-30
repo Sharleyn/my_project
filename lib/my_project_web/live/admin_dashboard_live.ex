@@ -45,9 +45,11 @@ defmodule MyProjectWeb.AdminDashboardLive do
      |> assign(:selected_menu, "dashboard")
      |> assign(:sidebar_open, true)
      |> assign(:peserta_diterima, peserta_diterima)
+     |> assign(:filter, "") # second step tambah filter
      |> assign(:page, 1)
      |> assign(:per_page, 5)
      |> assign(:total_diterima, length(peserta_diterima))
+     |> assign(:semua_peserta, peserta_diterima) #step 4 filtering sbb ada semua peserta =
      |> assign(:peserta_diterima, Enum.slice(peserta_diterima, 0, 5))} # page 1 = peserta 1 hingga 5}
 
   end
@@ -90,6 +92,20 @@ defmodule MyProjectWeb.AdminDashboardLive do
     def handle_event("toggle_sidebar", _, socket) do
       {:noreply, update(socket, :sidebar_open, &(!&1))}
     end
+
+    #Third step filtering dropdown (handle event)
+    def handle_event("filter_peserta", %{"filter" => filter}, socket) do
+      semua = socket.assigns.semua_peserta
+      tapis = if filter == "", do: semua, else: Enum.filter(semua, &(&1.status == filter))  # ganti Enum.filter() [step 3 dropdown status]
+
+      {:noreply,
+       socket
+       |> assign(:filter, filter)
+       |> assign(:page, 1)
+       |> assign(:total_diterima, length(tapis))
+       |> assign(:peserta_diterima, Enum.slice(tapis, 0, socket.assigns.per_page))}
+    end
+
 
 
     def render(assigns) do
@@ -173,9 +189,34 @@ defmodule MyProjectWeb.AdminDashboardLive do
             <% "peserta" -> %>
               <section><h2 class="text-2xl font-bold mb-4">Senarai Peserta</h2><p>Senarai peserta yang mendaftar.</p></section>
 
+              <!-- ✅ Tambah dropdown di atas jadual -->
+              <div class="mb-4">
+              <label for="filter" class="block text-sm font-medium text-gray-700 mb-1">Tapis Nama:</label>
+              <select id="filter" name="filter" phx-change="filter_peserta" class="border rounded px-3 py-2 text-sm">
+              <option value="">-- Semua --</option>
+              <%= for huruf <- Enum.uniq(Enum.map(@semua_peserta, &String.first(&1.nama))) |> Enum.sort() do %>
+              <option value={huruf} selected={@filter == huruf}><%= huruf %></option>
+              <% end %>
+              </select>
+              </div>
+
+
               <% "diterima" -> %>
                 <section>
                 <h2 class="text-2xl font-bold mb-4">Senarai Peserta > Diterima</h2>
+
+                <!-- 🔍 Dropdown filter status step 1 -->
+                <div class="mb-4">
+                <form phx-change="filter_peserta">
+                <label for="status_filter">Tapis Status:</label>
+                <select id="status_filter" name="filter" class="...">
+                <option value="">-- Semua --</option>
+                <%= for status <- Enum.uniq(Enum.map(@semua_peserta, & &1.status)) |> Enum.sort() do %>
+                <option value={status} selected={@filter == status}><%= status %></option>
+                <% end %>
+                </select>
+                </form>
+                </div>
 
                  <!-- ✅ Jadual peserta -->
                 <%= if @peserta_diterima != [] do %>
