@@ -1,6 +1,7 @@
 defmodule MyProjectWeb.AdminDashboardLive do
   use MyProjectWeb, :live_view
 
+  import MyProjectWeb.MaklumatKursus
 
   def mount(_params, _session, socket) do
     menus = [
@@ -10,8 +11,14 @@ defmodule MyProjectWeb.AdminDashboardLive do
         label: "Pendaftaran Kursus",
         path: ~p"/admin?menu=kursus",
         children: [
-          %{id: "kursus_kbs", label: "KBS", path: ~p"/admin?menu=kursus_kbs"},
-          %{id: "kursus_jpsm", label: "JPSM", path: ~p"/admin?menu=kursus_jpsm"}
+          %{id: "kursus_ict", label: "ICT dan Teknologi", path: ~p"/admin?menu=kursus_ict"},
+          %{id: "kursus_kulinari", label: "Kulinari dan Hospitaliti", path: ~p"/admin?menu=kulinari"},
+          %{id: "kursus_pertanian", label: "Pertanian dan Agro", path: ~p"/admin?menu=kursus_pertanian"},
+          %{id: "kursus_kemahiran", label: "Kemahiran Teknikal dan Vokasional", path: ~p"/admin?menu=kursus_kemahiran"},
+          %{id: "kursus_kecantikan", label: "Kecantikan dan Gaya Hidup", path: ~p"/admin?menu=kecantikan"},
+          %{id: "kursus_keusahawanan", label: "Keusahawanan dan Perniagaan", path: ~p"/admin?menu=keusahawanan"},
+          %{id: "kursus_kesihatan", label: "Kesihatan dan Keselamatan", path: ~p"/admin?menu=kursus_kesihatan"},
+          %{id: "kursus_seni", label: "Seni dan Kreativiti", path: ~p"/admin?menu=kursus_seni"}
         ]
       },
       %{
@@ -37,14 +44,33 @@ defmodule MyProjectWeb.AdminDashboardLive do
       %{id: 5, nama: "Ahmad Zulkifli", email: "zul@example.com", status: "Admin"},
       %{id: 6, nama: "Zulkifli", email: "zulkifli@example.com", status: "User"},
       %{id: 7, nama: "Faizal Ramli", email: "faizal@example.com", status: "Admin"},
-      %{id: 7, nama: "Maizatul Akmal Nisa", email: "Maizatul@example.com", status: "User"}
+      %{id: 8, nama: "Maizatul Akmal Nisa", email: "Maizatul@example.com", status: "User"},
+      %{id: 9, nama: "Maya binti Karin", email: "maya@example.com", status: "Admin"},
+      %{id: 10, nama: "Siti binti Halim", email: "sitihalim@example.com", status: "Admin"},
+      %{id: 11, nama: "John Roti", email: "johnroti@example.com", status: "User"},
+      %{id: 12, nama: "Ziana Zain", email: "zain@example.com", status: "Admin"},
+      %{id: 13, nama: "Kepci bin Kifli", email: "Kepci@example.com", status: "Admin"},
+      %{id: 14, nama: "Zulkifli bin Zakaria", email: "zullll@example.com", status: "User"},
+      %{id: 15, nama: "Faizal bin Tahir", email: "faizaltahir@example.com", status: "Admin"},
+      %{id: 16, nama: "Maizatul binti Amin", email: "Maizatulamin@example.com", status: "User"}
     ]
+
+    kursus_list = [
+      %{id: 1, nama: "Kursus Elixir", kategori: "Coding", lokasi: "Online"},
+      %{id: 2, nama: "Phoenix Framework", kategori: "Web", lokasi: "KL"}
+    ]
+
+    socket =
+      socket
+      |> assign(:kursus_list, kursus_list)
 
     {:ok,
      socket
      |> assign(:menus, menus)
      |> assign(:selected_menu, "dashboard")
      |> assign(:sidebar_open, true)
+     |> assign(:kursus_list, kursus_list)     # ← jika belum lagi
+     |> assign(:kursus_edit, nil)   # untuk edit kursus
      |> assign(:peserta_diterima, peserta_diterima)
      |> assign(:filter, "") # second step tambah filter
      |> assign(:page, 1)
@@ -61,13 +87,21 @@ defmodule MyProjectWeb.AdminDashboardLive do
 
     semua_peserta = [
       %{id: 1, nama: "Ali Bin Ahmad", email: "ali@example.com", status: "Admin"},
-      %{id: 2, nama: "Siti Nurhaliza", email: "siti@example.com", status: "Admin" },
+      %{id: 2, nama: "Siti Nurhaliza", email: "siti@example.com", status: "Admin"},
       %{id: 3, nama: "John Doe", email: "john@example.com", status: "User"},
       %{id: 4, nama: "Liyana Zain", email: "liyana@example.com", status: "Admin"},
       %{id: 5, nama: "Ahmad Zulkifli", email: "zul@example.com", status: "Admin"},
       %{id: 6, nama: "Zulkifli", email: "zulkifli@example.com", status: "User"},
       %{id: 7, nama: "Faizal Ramli", email: "faizal@example.com", status: "Admin"},
-      %{id: 7, nama: "Maizatul Akmal Nisa", email: "Maizatul@example.com", status: "User"}
+      %{id: 8, nama: "Maizatul Akmal Nisa", email: "Maizatul@example.com", status: "User"},
+      %{id: 9, nama: "Maya binti Karin", email: "maya@example.com", status: "Admin"},
+      %{id: 10, nama: "Siti binti Halim", email: "sitihalim@example.com", status: "Admin"},
+      %{id: 11, nama: "John Roti", email: "johnroti@example.com", status: "User"},
+      %{id: 12, nama: "Ziana Zain", email: "zain@example.com", status: "Admin"},
+      %{id: 13, nama: "Kepci bin Kifli", email: "Kepci@example.com", status: "Admin"},
+      %{id: 14, nama: "Zulkifli bin Zakaria", email: "zullll@example.com", status: "User"},
+      %{id: 15, nama: "Faizal bin Tahir", email: "faizaltahir@example.com", status: "Admin"},
+      %{id: 16, nama: "Maizatul binti Amin", email: "Maizatulamin@example.com", status: "User"}
     ]
 
     peserta = Enum.slice(semua_peserta, (page - 1) * per_page, per_page)
@@ -108,6 +142,59 @@ defmodule MyProjectWeb.AdminDashboardLive do
        |> assign(:peserta_diterima, Enum.slice(tapis, 0, socket.assigns.per_page))}
     end
 
+    def handle_event("delete_kursus", %{"id" => id}, socket) do
+      id = String.to_integer(id)
+      baru = Enum.reject(socket.assigns.kursus_list, &(&1.id == id))
+
+      {:noreply, assign(socket, :kursus_list, baru)}
+    end
+
+    def handle_event("edit_kursus", %{"id" => id}, socket) do
+      id = String.to_integer(id)
+      kursus = Enum.find(socket.assigns.kursus_list, &(&1.id == id))
+
+      {:noreply, assign(socket, :kursus_edit, kursus)}
+
+      # Di sini, anda boleh buka borang kemaskini (bukan scope permintaan ini lagi)
+      IO.inspect(kursus)
+
+      {:noreply, socket}
+    end
+
+    def handle_event("simpan_kursus", %{"kursus" => params}, socket) do
+      id = String.to_integer(params["id"])
+      baru = %{
+        id: id,
+        nama: params["nama"],
+        kategori: params["kategori"],
+        lokasi: params["lokasi"]
+      }
+
+      dikemaskini =
+        Enum.map(socket.assigns.kursus_list, fn kursus ->
+          if kursus.id == id, do: baru, else: kursus
+        end)
+
+      {:noreply,
+       socket
+       |> assign(:kursus_list, dikemaskini)
+       |> assign(:kursus_edit, nil)}
+    end
+
+
+    # ✅ Tambah di sini: Delete peserta
+  def handle_event("delete_peserta", %{"id" => id}, socket) do
+  id = String.to_integer(id)
+
+  semua = socket.assigns.semua_peserta
+  baru = Enum.reject(semua, fn peserta -> peserta.id == id end)
+
+  {:noreply,
+   socket
+   |> assign(:semua_peserta, baru)
+   |> assign(:peserta_diterima, Enum.slice(baru, 0, socket.assigns.per_page))
+   |> assign(:total_diterima, length(baru))}
+   end
 
 
     def render(assigns) do
@@ -176,32 +263,64 @@ defmodule MyProjectWeb.AdminDashboardLive do
             <% "kursus" -> %>
               <section><h2 class="text-2xl font-bold mb-4">Pendaftaran Kursus</h2><p>Daftar kursus baharu di sini.</p></section>
 
-                <% "kursus_kbs" -> %>
+
+              <!-- ✅import dari live>components>maklumat_user (untuk edit kursus) -->
+              <%= if @selected_menu == "kursus" do %>
+              <.maklumat_kursus kursus_list={@kursus_list} kursus_edit={@kursus_edit} />
+              <% end %>
+
+              <!-- ✅Sub Menu untuk Jenis Kursus -->
+                <% "kursus_ict" -> %>
                 <section>
-                <h2 class="text-2xl font-bold mb-4">Kursus KBS</h2>
-                <p>Maklumat kursus di bawah KBS.</p>
+                <h2 class="text-2xl font-bold mb-4">Kursus ICT dan Teknologi</h2>
+                <p>Maklumat kursus di bawah ICT.</p>
                 </section>
 
-                <% "kursus_jpsm" -> %>
+                <% "kursus_kulinari" -> %>
                 <section>
-                <h2 class="text-2xl font-bold mb-4">Kursus JPSM</h2>
-                <p>Maklumat kursus di bawah JPSM.</p>
+                <h2 class="text-2xl font-bold mb-4">Kursus Kulinari dan Hospitaliti</h2>
+                <p>Maklumat kursus di bawah Kulinari dan Hospitaliti.</p>
                 </section>
+
+                <% "kursus_pertanian" -> %>
+                <section>
+                <h2 class="text-2xl font-bold mb-4">Kursus Pertanian dan Agro</h2>
+                <p>Maklumat kursus di bawah Pertanian dan Agro.</p>
+                </section>
+
+                <% "kursus_kemahiran" -> %>
+                <section>
+                <h2 class="text-2xl font-bold mb-4">Kursus Kemahiran Teknikal dan Vokasional</h2>
+                <p>Maklumat kursus di bawah Kemahiran Teknikal dan Vokasional.</p>
+                </section>
+
+                <% "kursus_kecantikan" -> %>
+                <section>
+                <h2 class="text-2xl font-bold mb-4">Kursus Kecantikan dan Gaya Hidup</h2>
+                <p>Maklumat kursus di bawah Kecantikan dan Gaya Hidup.</p>
+                </section>
+
+                <% "kursus_keusahawanan" -> %>
+                <section>
+                <h2 class="text-2xl font-bold mb-4">Kursus Keusahawanan dan Perniagaan</h2>
+                <p>Maklumat kursus di bawah Keusahawanan dan Perniagaan.</p>
+                </section>
+
+                <% "kursus_kesihatan" -> %>
+                <section>
+                <h2 class="text-2xl font-bold mb-4">Kursus Kesihatan dan Keselamatan</h2>
+                <p>Maklumat kursus di bawah Kesihatan dan Keselamatan.</p>
+                </section>
+
+                <% "kursus_seni" -> %>
+                <section>
+                <h2 class="text-2xl font-bold mb-4">Kursus Seni dan Kreativiti</h2>
+                <p>Maklumat kursus di bawah Seni dan Kreativiti.</p>
+                </section>
+
 
             <% "peserta" -> %>
               <section><h2 class="text-2xl font-bold mb-4">Senarai Peserta</h2><p>Senarai peserta yang mendaftar.</p></section>
-
-              <!-- ✅ Tambah dropdown di atas jadual -->
-              <div class="mb-4">
-              <label for="filter" class="block text-sm font-medium text-gray-700 mb-1">Tapis Nama:</label>
-              <select id="filter" name="filter" phx-change="filter_peserta" class="border rounded px-3 py-2 text-sm">
-              <option value="">-- Semua --</option>
-              <%= for huruf <- Enum.uniq(Enum.map(@semua_peserta, &String.first(&1.nama))) |> Enum.sort() do %>
-              <option value={huruf} selected={@filter == huruf}><%= huruf %></option>
-              <% end %>
-              </select>
-              </div>
-
 
               <% "diterima" -> %>
                 <section>
@@ -229,6 +348,7 @@ defmodule MyProjectWeb.AdminDashboardLive do
                 <th class="px-4 py-2 border-b">Nama</th>
                 <th class="px-4 py-2 border-b">Emel</th>
                 <th class="px-4 py-2 border-b">Status</th>
+                <th class="px-4 py-2 border-b">Tindakan</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -238,13 +358,17 @@ defmodule MyProjectWeb.AdminDashboardLive do
                 <td class="px-4 py-2 border-b"><%= peserta.nama %></td>
                 <td class="px-4 py-2 border-b"><%= peserta.email %></td>
                 <td class="px-4 py-2 border-b"><%= peserta.status %></td>
-                </tr>
-                <% end %>
-                </tbody>
-                </table>
-                <% else %>
-                <p class="text-gray-500">Tiada peserta diterima buat masa ini.</p>
-                <% end %>
+                <td class="px-4 py-2 border-b space-x-2">
+                <button phx-click="edit_peserta" phx-value-id={peserta.id} class="px-2 py-1 text-sm text-white bg-blue-500 rounded hover:bg-blue-600">Edit</button>
+                <button phx-click="delete_peserta" phx-value-id={peserta.id} class="px-2 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-600" data-confirm="Adakah anda pasti ingin padam peserta ini?">Padam</button>
+                 </td>
+                  </tr>
+                  <% end %>
+                  </tbody>
+                  </table>
+                  <% else %>
+                  <p class="text-gray-500">Tiada peserta diterima buat masa ini.</p>
+                  <% end %>
 
 
                 <!-- ✅ Pagination -->
@@ -260,6 +384,7 @@ defmodule MyProjectWeb.AdminDashboardLive do
                 <% end %>
                 </div>
                  </section>
+
 
                 <% "ditolak" -> %>
                 <section>
