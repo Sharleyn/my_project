@@ -30,13 +30,13 @@ defmodule MyProjectWeb.AdminDashboardLive do
 
     # ✅ Hanya satu return di sini
     peserta_diterima = [
-      %{id: 1, nama: "Ali Bin Ahmad", email: "ali@example.com"},
-      %{id: 2, nama: "Siti Nurhaliza", email: "siti@example.com"},
-      %{id: 3, nama: "John Doe", email: "john@example.com"},
-      %{id: 4, nama: "Liyana Zain", email: "liyana@example.com"},
-      %{id: 5, nama: "Ahmad Zulkifli", email: "zul@example.com"},
-      %{id: 6, nama: "Zulkifli", email: "zulkifli@example.com"},
-      %{id: 7, nama: "Faizal Ramli", email: "faizal@example.com"}
+      %{id: 1, nama: "Ali Bin Ahmad", email: "ali@example.com", status: "Admin"},
+      %{id: 2, nama: "Siti Nurhaliza", email: "siti@example.com", status: "Admin"},
+      %{id: 3, nama: "John Doe", email: "john@example.com", status: "User"},
+      %{id: 4, nama: "Liyana Zain", email: "liyana@example.com", status: "Admin"},
+      %{id: 5, nama: "Ahmad Zulkifli", email: "zul@example.com", status: "Admin"},
+      %{id: 6, nama: "Zulkifli", email: "zulkifli@example.com", status: "User"},
+      %{id: 7, nama: "Faizal Ramli", email: "faizal@example.com", status: "Admin"}
     ]
 
     {:ok,
@@ -57,13 +57,13 @@ defmodule MyProjectWeb.AdminDashboardLive do
     per_page = socket.assigns.per_page || 5
 
     semua_peserta = [
-      %{id: 1, nama: "Ali Bin Ahmad", email: "ali@example.com"},
-      %{id: 2, nama: "Siti Nurhaliza", email: "siti@example.com"},
-      %{id: 3, nama: "John Doe", email: "john@example.com"},
-      %{id: 4, nama: "Liyana Zain", email: "liyana@example.com"},
-      %{id: 5, nama: "Ahmad Zulkifli", email: "zul@example.com"},
-      %{id: 6, nama: "Zulkifli", email: "zulkifli@example.com"},
-      %{id: 7, nama: "Faizal Ramli", email: "faizal@example.com"}
+      %{id: 1, nama: "Ali Bin Ahmad", email: "ali@example.com", status: "Admin"},
+      %{id: 2, nama: "Siti Nurhaliza", email: "siti@example.com", status: "Admin" },
+      %{id: 3, nama: "John Doe", email: "john@example.com", status: "User"},
+      %{id: 4, nama: "Liyana Zain", email: "liyana@example.com", status: "Admin"},
+      %{id: 5, nama: "Ahmad Zulkifli", email: "zul@example.com", status: "Admin"},
+      %{id: 6, nama: "Zulkifli", email: "zulkifli@example.com", status: "User"},
+      %{id: 7, nama: "Faizal Ramli", email: "faizal@example.com", status: "Admin"}
     ]
 
     peserta = Enum.slice(semua_peserta, (page - 1) * per_page, per_page)
@@ -185,6 +185,7 @@ defmodule MyProjectWeb.AdminDashboardLive do
                 <th class="px-4 py-2 border-b">#</th>
                 <th class="px-4 py-2 border-b">Nama</th>
                 <th class="px-4 py-2 border-b">Emel</th>
+                <th class="px-4 py-2 border-b">Status</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -193,6 +194,7 @@ defmodule MyProjectWeb.AdminDashboardLive do
                 <td class="px-4 py-2 border-b"><%= ((@page - 1) * @per_page) + index + 1 %></td>
                 <td class="px-4 py-2 border-b"><%= peserta.nama %></td>
                 <td class="px-4 py-2 border-b"><%= peserta.email %></td>
+                <td class="px-4 py-2 border-b"><%= peserta.status %></td>
                 </tr>
                 <% end %>
                 </tbody>
