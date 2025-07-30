@@ -105,7 +105,7 @@ defmodule MyProjectWeb.AdminDashboardLive do
       %{id: 16, nama: "Maizatul binti Amin", email: "Maizatulamin@example.com", status: "User"}
     ]
 
-    semua = socket.assigns.semua_peserta
+    semua = semua_peserta
     tapis = if filter == "", do: semua, else: Enum.filter(semua, &(&1.status == filter))
 
 
