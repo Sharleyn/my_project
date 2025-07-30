@@ -49,6 +49,7 @@ defmodule MyProjectWeb.AdminDashboardLive do
      |> assign(:per_page, 5)
      |> assign(:total_diterima, length(peserta_diterima))
      |> assign(:peserta_diterima, Enum.slice(peserta_diterima, 0, 5))} # page 1 = peserta 1 hingga 5}
+
   end
 
   def handle_params(%{"menu" => "diterima", "page" => page}, _uri, socket) do
@@ -149,7 +150,7 @@ defmodule MyProjectWeb.AdminDashboardLive do
         <% end %>
 
         <!-- ✅Main content -->
-        <main class="ml-64 min-h-screen bg-white text-black px-8 py-6">
+        <main class="flex-1 bg-white text-black p-6 overflow-auto">
           <%= case @selected_menu do %>
             <% "dashboard" -> %>
               <section><h2 class="text-2xl font-bold mb-4">Dashboard</h2><p>Selamat datang ke papan pemuka admin.</p></section>
@@ -174,7 +175,7 @@ defmodule MyProjectWeb.AdminDashboardLive do
 
               <% "diterima" -> %>
                 <section>
-                <h2 class="text-2xl font-bold mb-4">Diterima</h2>
+                <h2 class="text-2xl font-bold mb-4">Senarai Peserta > Diterima</h2>
 
                  <!-- ✅ Jadual peserta -->
                 <%= if @peserta_diterima != [] do %>
