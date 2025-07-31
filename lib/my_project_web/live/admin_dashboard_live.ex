@@ -69,31 +69,36 @@ defmodule MyProjectWeb.AdminDashboardLive do
 
 
   # Untuk menu diterima DENGAN page
-  def handle_params(%{"menu" => "diterima", "page" => page}, _uri, socket) do
+  def handle_params(%{"menu" => "diterima", "page" => page} = params, _uri, socket) do
     page = String.to_integer(page || "1")
     per_page = socket.assigns.per_page || 5
     filter = socket.assigns.filter || ""
+    query_text = Map.get(params, "query", "") # ← ambil teks carian jika ada
 
-    query =
+    # ✅ Gunakan base_query untuk filter + carian
+    base_query =
       from(u in User,
-        where: u.status == ^filter or ^filter == "",
-        limit: ^per_page,
-        offset: ^((page - 1) * per_page)
+        where:
+          (u.status == ^filter or ^filter == "") and
+          (ilike(u.name, ^"%#{query_text}%") or ilike(u.email, ^"%#{query_text}%"))
       )
 
-    peserta = Repo.all(query)
+    peserta =
+      base_query
+      |> limit(^per_page)
+      |> offset(^((page - 1) * per_page))
+      |> Repo.all()
 
     total =
-      from(u in User, where: u.status == ^filter or ^filter == "")
+      base_query
       |> Repo.aggregate(:count, :id)
 
-       # ✅ Ambil semua status unik dari database
-      semua_status =
+    semua_status =
       from(u in User,
-      select: u.status,
-      distinct: true
-    )
-    |> Repo.all()
+        select: u.status,
+        distinct: true
+      )
+      |> Repo.all()
 
     {:noreply,
      socket
@@ -101,9 +106,12 @@ defmodule MyProjectWeb.AdminDashboardLive do
      |> assign(:peserta_diterima, peserta)
      |> assign(:page, page)
      |> assign(:per_page, per_page)
+     |> assign(:query, query_text)
+     |> assign(:filter, filter)
      |> assign(:total_diterima, total)
-     |> assign(:semua_status, semua_status)} # ← Tambah assign sini}
+     |> assign(:semua_status, semua_status)}
   end
+
 
   # Untuk menu diterima TANPA page
   def handle_params(%{"menu" => "diterima"}, _uri, socket) do
@@ -148,18 +156,37 @@ defmodule MyProjectWeb.AdminDashboardLive do
    |> assign(:total_diterima, total)}
 end
 
-    # untuk search bar
-    def handle_event("search", %{"query" => query}, socket) do
-      results =
-        from(u in User, where: ilike(u.name, ^"%#{query}%"))
-        |> Repo.all()
+def handle_event("search", %{"query" => query}, socket) do
+  filter = socket.assigns.filter || ""
+  per_page = socket.assigns.per_page || 5
 
-      {:noreply,
-       socket
-       |> assign(:query, query)
-       |> assign(:peserta_diterima, results)
-       |> assign(:total_diterima, length(results))}
-    end
+  query_peserta =
+    from(u in User,
+      where:
+        (u.status == ^filter or ^filter == "") and
+        (ilike(u.name, ^"%#{query}%") or ilike(u.email, ^"%#{query}%")),
+      limit: ^per_page,
+      offset: 0
+    )
+
+  peserta = Repo.all(query_peserta)
+
+  total =
+    from(u in User,
+      where:
+        (u.status == ^filter or ^filter == "") and
+        (ilike(u.name, ^"%#{query}%") or ilike(u.email, ^"%#{query}%"))
+    )
+    |> Repo.aggregate(:count, :id)
+
+  {:noreply,
+   socket
+   |> assign(:query, query)
+   |> assign(:page, 1)
+   |> assign(:peserta_diterima, peserta)
+   |> assign(:total_diterima, total)}
+end
+
 
 
     def handle_event("delete_kursus", %{"id" => id}, socket) do
@@ -364,18 +391,36 @@ end
                 <section>
                 <h2 class="text-2xl font-bold mb-4">Senarai Peserta > Diterima</h2>
 
-                <!-- 🔍 Dropdown filter status step 1 -->
-                <div class="mb-4">
-                <form phx-change="filter_peserta">
-                <label for="status_filter">Tapis Status:</label>
-                <select id="status_filter" name="filter" class="...">
-                <option value="">-- Semua --</option>
-                <%= for status <- Enum.sort(@semua_status) do %>
-                <option value={status} selected={@filter == status}><%= status %></option>
-                <% end %>
-                </select>
+              <!-- 🔎 Search + Dropdown sebaris -->
+              <div class="mb-4 flex items-center space-x-4">
+
+                 <!-- 🔍 Search Bar dengan ikon -->
+                <form phx-change="search" phx-submit="search" class="relative flex-1">
+                  <input
+                    type="text"
+                    name="query"
+                    value={@query || ""}
+                    placeholder="Cari nama atau email..."
+                    class="pl-8 border border-gray-300 rounded px-2 py-1 text-sm"
+                  />
+                  <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">
+                    🔍
+                  </span>
                 </form>
+
+
+                  <!-- Dropdown -->
+                  <form phx-change="filter_peserta">
+                    <select name="filter" class="border border-gray-300 rounded px-2 py-1 text-sm">
+                      <option value="">  Semua   </option>
+                      <%= for status <- Enum.sort(@semua_status) do %>
+                        <option value={status} selected={@filter == status}><%= status %></option>
+                      <% end %>
+                    </select>
+                  </form>
+
                 </div>
+
 
                  <!-- ✅ Jadual peserta -->
                 <%= if @peserta_diterima != [] do %>
