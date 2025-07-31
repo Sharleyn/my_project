@@ -63,6 +63,7 @@ defmodule MyProjectWeb.AdminDashboardLive do
      |> assign(:per_page, 5)
      |> assign(:peserta_diterima, [])
      |> assign(:total_diterima, 0)
+     |> assign(:query, "")
 } #step 4 filtering sbb ada semua peserta =
 
   end
