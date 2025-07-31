@@ -425,7 +425,7 @@ end
 
                  <!-- ✅ Jadual peserta -->
                 <%= if @peserta_diterima != [] do %>
-                <table class="min-w-full bg-white border border-gray-200 shadow-sm">
+                <table class="w-full max-w-7xl bg-white border border-gray-200 shadow-sm">
                 <thead>
                 <tr class="bg-gray-100 text-left text-sm font-semibold text-gray-700">
                 <th class="px-4 py-2 border-b">#</th>
