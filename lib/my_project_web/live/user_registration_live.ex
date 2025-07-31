@@ -31,6 +31,19 @@ defmodule MyProjectWeb.UserRegistrationLive do
           Oops, something went wrong! Please check the errors below.
         </.error>
 
+        <!-- Tambah ini di sini 👇 (Tambah nama) -->
+        <div class="mb-4">
+          <label for="user_name" class="block text-sm font-medium text-gray-700">Nama</label>
+          <input type="text" name="user[name]" id="user_name"
+                value={@form[:name].value}
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+          <%= for {msg, _} <- @form[:name].errors do %>
+            <span class="text-sm text-red-600"><%= msg %></span>
+          <% end %>
+        </div>
+
+        <!-- Tamat tambahan -->
+
         <.input field={@form[:email]} type="email" label="Email" required />
         <.input field={@form[:password]} type="password" label="Password" required />
         <.input

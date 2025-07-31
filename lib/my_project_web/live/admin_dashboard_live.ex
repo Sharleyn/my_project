@@ -1,7 +1,12 @@
 defmodule MyProjectWeb.AdminDashboardLive do
   use MyProjectWeb, :live_view
 
+  alias MyProject.Accounts.User
+  alias MyProject.Repo
+
+  import Ecto.Query
   import MyProjectWeb.MaklumatKursus
+
 
   def mount(_params, _session, socket) do
     menus = [
@@ -36,24 +41,6 @@ defmodule MyProjectWeb.AdminDashboardLive do
     ]
 
     # ✅ Hanya satu return di sini
-    peserta_diterima = [
-      %{id: 1, nama: "Ali Bin Ahmad", email: "ali@example.com", status: "Admin"},
-      %{id: 2, nama: "Siti Nurhaliza", email: "siti@example.com", status: "Admin"},
-      %{id: 3, nama: "John Doe", email: "john@example.com", status: "User"},
-      %{id: 4, nama: "Liyana Zain", email: "liyana@example.com", status: "Admin"},
-      %{id: 5, nama: "Ahmad Zulkifli", email: "zul@example.com", status: "Admin"},
-      %{id: 6, nama: "Zulkifli", email: "zulkifli@example.com", status: "User"},
-      %{id: 7, nama: "Faizal Ramli", email: "faizal@example.com", status: "Admin"},
-      %{id: 8, nama: "Maizatul Akmal Nisa", email: "Maizatul@example.com", status: "User"},
-      %{id: 9, nama: "Maya binti Karin", email: "maya@example.com", status: "Admin"},
-      %{id: 10, nama: "Siti binti Halim", email: "sitihalim@example.com", status: "Admin"},
-      %{id: 11, nama: "John Roti", email: "johnroti@example.com", status: "User"},
-      %{id: 12, nama: "Ziana Zain", email: "zain@example.com", status: "Admin"},
-      %{id: 13, nama: "Kepci bin Kifli", email: "Kepci@example.com", status: "Admin"},
-      %{id: 14, nama: "Zulkifli bin Zakaria", email: "zullll@example.com", status: "User"},
-      %{id: 15, nama: "Faizal bin Tahir", email: "faizaltahir@example.com", status: "Admin"},
-      %{id: 16, nama: "Maizatul binti Amin", email: "Maizatulamin@example.com", status: "User"}
-    ]
 
     kursus_list = [
       %{id: 1, nama: "Kursus Elixir", kategori: "Coding", lokasi: "Online"},
@@ -71,46 +58,42 @@ defmodule MyProjectWeb.AdminDashboardLive do
      |> assign(:sidebar_open, true)
      |> assign(:kursus_list, kursus_list)     # ← jika belum lagi
      |> assign(:kursus_edit, nil)   # untuk edit kursus
-     |> assign(:peserta_diterima, peserta_diterima)
      |> assign(:filter, "") # second step tambah filter
      |> assign(:page, 1)
      |> assign(:per_page, 5)
-     |> assign(:total_diterima, length(peserta_diterima))
-     |> assign(:semua_peserta, peserta_diterima) #step 4 filtering sbb ada semua peserta =
-     |> assign(:peserta_diterima, Enum.slice(peserta_diterima, 0, 5))} # page 1 = peserta 1 hingga 5}
+     |> assign(:peserta_diterima, [])
+     |> assign(:total_diterima, 0)
+} #step 4 filtering sbb ada semua peserta =
 
   end
 
+
+  # Untuk menu diterima DENGAN page
   def handle_params(%{"menu" => "diterima", "page" => page}, _uri, socket) do
     page = String.to_integer(page || "1")
     per_page = socket.assigns.per_page || 5
     filter = socket.assigns.filter || ""
 
-    semua_peserta = [
-      %{id: 1, nama: "Ali Bin Ahmad", email: "ali@example.com", status: "Admin"},
-      %{id: 2, nama: "Siti Nurhaliza", email: "siti@example.com", status: "Admin"},
-      %{id: 3, nama: "John Doe", email: "john@example.com", status: "User"},
-      %{id: 4, nama: "Liyana Zain", email: "liyana@example.com", status: "Admin"},
-      %{id: 5, nama: "Ahmad Zulkifli", email: "zul@example.com", status: "Admin"},
-      %{id: 6, nama: "Zulkifli", email: "zulkifli@example.com", status: "User"},
-      %{id: 7, nama: "Faizal Ramli", email: "faizal@example.com", status: "Admin"},
-      %{id: 8, nama: "Maizatul Akmal Nisa", email: "Maizatul@example.com", status: "User"},
-      %{id: 9, nama: "Maya binti Karin", email: "maya@example.com", status: "Admin"},
-      %{id: 10, nama: "Siti binti Halim", email: "sitihalim@example.com", status: "Admin"},
-      %{id: 11, nama: "John Roti", email: "johnroti@example.com", status: "User"},
-      %{id: 12, nama: "Ziana Zain", email: "zain@example.com", status: "Admin"},
-      %{id: 13, nama: "Kepci bin Kifli", email: "Kepci@example.com", status: "Admin"},
-      %{id: 14, nama: "Zulkifli bin Zakaria", email: "zullll@example.com", status: "User"},
-      %{id: 15, nama: "Faizal bin Tahir", email: "faizaltahir@example.com", status: "Admin"},
-      %{id: 16, nama: "Maizatul binti Amin", email: "Maizatulamin@example.com", status: "User"}
-    ]
+    query =
+      from(u in User,
+        where: u.status == ^filter or ^filter == "",
+        limit: ^per_page,
+        offset: ^((page - 1) * per_page)
+      )
 
-    semua = semua_peserta
-    tapis = if filter == "", do: semua, else: Enum.filter(semua, &(&1.status == filter))
+    peserta = Repo.all(query)
 
+    total =
+      from(u in User, where: u.status == ^filter or ^filter == "")
+      |> Repo.aggregate(:count, :id)
 
-    peserta = Enum.slice(tapis, (page - 1) * per_page, per_page)
-    total = length(tapis)
+       # ✅ Ambil semua status unik dari database
+      semua_status =
+      from(u in User,
+      select: u.status,
+      distinct: true
+    )
+    |> Repo.all()
 
     {:noreply,
      socket
@@ -118,8 +101,14 @@ defmodule MyProjectWeb.AdminDashboardLive do
      |> assign(:peserta_diterima, peserta)
      |> assign(:page, page)
      |> assign(:per_page, per_page)
-     |> assign(:total_diterima, total)}
+     |> assign(:total_diterima, total)
+     |> assign(:semua_status, semua_status)} # ← Tambah assign sini}
   end
+
+  # Untuk menu diterima TANPA page
+  def handle_params(%{"menu" => "diterima"}, _uri, socket) do
+    {:noreply, push_patch(socket, to: ~p"/admin?menu=diterima&page=1")}
+    end
 
   def handle_params(%{"menu" => menu}, _uri, socket) do
     {:noreply, assign(socket, :selected_menu, menu)}
@@ -131,21 +120,47 @@ defmodule MyProjectWeb.AdminDashboardLive do
 
 
     def handle_event("toggle_sidebar", _, socket) do
-      {:noreply, update(socket, :sidebar_open, &(!&1))}
+      {:noreply, assign(socket, :sidebar_open, !socket.assigns.sidebar_open)}
     end
 
     #Third step filtering dropdown (handle event)
-    def handle_event("filter_peserta", %{"filter" => filter}, socket) do
-      semua = socket.assigns.semua_peserta
-      tapis = if filter == "", do: semua, else: Enum.filter(semua, &(&1.status == filter))  # ganti Enum.filter() [step 3 dropdown status]
+   def handle_event("filter_peserta", %{"filter" => filter}, socket) do
+  per_page = socket.assigns.per_page || 5
+
+  query =
+    from(u in User,
+      where: u.status == ^filter or ^filter == "",
+      limit: ^per_page,
+      offset: 0
+    )
+
+  peserta = Repo.all(query)
+
+  total =
+    from(u in User, where: u.status == ^filter or ^filter == "")
+    |> Repo.aggregate(:count, :id)
+
+  {:noreply,
+   socket
+   |> assign(:filter, filter)
+   |> assign(:page, 1)
+   |> assign(:peserta_diterima, peserta)
+   |> assign(:total_diterima, total)}
+end
+
+    # untuk search bar
+    def handle_event("search", %{"query" => query}, socket) do
+      results =
+        from(u in User, where: ilike(u.name, ^"%#{query}%"))
+        |> Repo.all()
 
       {:noreply,
        socket
-       |> assign(:filter, filter)
-       |> assign(:page, 1)
-       |> assign(:total_diterima, length(tapis))
-       |> assign(:peserta_diterima, Enum.slice(tapis, 0, socket.assigns.per_page))}
+       |> assign(:query, query)
+       |> assign(:peserta_diterima, results)
+       |> assign(:total_diterima, length(results))}
     end
+
 
     def handle_event("delete_kursus", %{"id" => id}, socket) do
       id = String.to_integer(id)
@@ -188,19 +203,37 @@ defmodule MyProjectWeb.AdminDashboardLive do
 
 
     # ✅ Tambah di sini: Delete peserta
-  def handle_event("delete_peserta", %{"id" => id}, socket) do
-  id = String.to_integer(id)
+    def handle_event("delete_peserta", %{"id" => id}, socket) do
+      id = String.to_integer(id)
+      user = Repo.get(User, id)
 
-  semua = socket.assigns.semua_peserta
-  baru = Enum.reject(semua, fn peserta -> peserta.id == id end)
+      if user do
+        {:ok, _} = Repo.delete(user)
+      end
 
-  {:noreply,
-   socket
-   |> assign(:semua_peserta, baru)
-   |> assign(:peserta_diterima, Enum.slice(baru, 0, socket.assigns.per_page))
-   |> assign(:total_diterima, length(baru))}
-   end
+      # Refresh peserta selepas delete
+      page = socket.assigns.page
+      per_page = socket.assigns.per_page
+      filter = socket.assigns.filter || ""
 
+      query =
+        from(u in User,
+          where: u.status == ^filter or ^filter == "",
+          limit: ^per_page,
+          offset: ^((page - 1) * per_page)
+        )
+
+      peserta = Repo.all(query)
+
+      total =
+        from(u in User, where: u.status == ^filter or ^filter == "")
+        |> Repo.aggregate(:count, :id)
+
+      {:noreply,
+       socket
+       |> assign(:peserta_diterima, peserta)
+       |> assign(:total_diterima, total)}
+    end
 
     def render(assigns) do
       ~H"""
@@ -337,7 +370,7 @@ defmodule MyProjectWeb.AdminDashboardLive do
                 <label for="status_filter">Tapis Status:</label>
                 <select id="status_filter" name="filter" class="...">
                 <option value="">-- Semua --</option>
-                <%= for status <- Enum.uniq(Enum.map(@semua_peserta, & &1.status)) |> Enum.sort() do %>
+                <%= for status <- Enum.sort(@semua_status) do %>
                 <option value={status} selected={@filter == status}><%= status %></option>
                 <% end %>
                 </select>
@@ -350,7 +383,7 @@ defmodule MyProjectWeb.AdminDashboardLive do
                 <thead>
                 <tr class="bg-gray-100 text-left text-sm font-semibold text-gray-700">
                 <th class="px-4 py-2 border-b">#</th>
-                <th class="px-4 py-2 border-b">Nama</th>
+                <th class="px-4 py-2 border-b">Name</th>
                 <th class="px-4 py-2 border-b">Emel</th>
                 <th class="px-4 py-2 border-b">Status</th>
                 <th class="px-4 py-2 border-b">Tindakan</th>
@@ -360,7 +393,7 @@ defmodule MyProjectWeb.AdminDashboardLive do
                 <%= for {peserta, index} <- Enum.with_index(@peserta_diterima, 0) do %>
                 <tr class="hover:bg-gray-50 text-sm">
                 <td class="px-4 py-2 border-b"><%= ((@page - 1) * @per_page) + index + 1 %></td>
-                <td class="px-4 py-2 border-b"><%= peserta.nama %></td>
+                <td class="px-4 py-2 border-b"><%= peserta.name %></td>
                 <td class="px-4 py-2 border-b"><%= peserta.email %></td>
                 <td class="px-4 py-2 border-b"><%= peserta.status %></td>
                 <td class="px-4 py-2 border-b space-x-2">
