@@ -75,8 +75,16 @@ defmodule MyProject.Accounts do
 
   """
   def register_user(attrs) do
+    # Tetapkan status berdasarkan role (capitalize)
+    role = Map.get(attrs, "role", "user")
+    status = String.capitalize(role)
+
+    updated_attrs =
+      attrs
+      |> Map.put("status", status)
+
     %User{}
-    |> User.registration_changeset(attrs)
+    |> User.registration_changeset(updated_attrs)
     |> Repo.insert()
   end
 

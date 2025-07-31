@@ -3,6 +3,7 @@ defmodule MyProject.Accounts.User do
   import Ecto.Changeset
 
   schema "users" do
+    field :name, :string
     field :email, :string
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
@@ -10,6 +11,7 @@ defmodule MyProject.Accounts.User do
     field :confirmed_at, :utc_datetime
 
     field :role, :string
+    field :status, :string
 
     timestamps(type: :utc_datetime)
   end
@@ -39,9 +41,10 @@ defmodule MyProject.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :password, :role])
+    |> cast(attrs, [:name, :email, :password, :role, :status])
+    |> validate_required([:name, :email, :password, :role])
+    |> validate_length(:name, min: 2)
     |> validate_inclusion(:role, ["user", "admin"])
-    |> validate_required([:email, :password, :role])
     |> validate_email(opts)
     |> validate_password(opts)
   end
@@ -123,6 +126,16 @@ defmodule MyProject.Accounts.User do
     |> validate_confirmation(:password, message: "does not match password")
     |> validate_password(opts)
   end
+
+  # Tambah di bawah fungsi-fungsi lain, contohnya sebelum atau selepas `confirm_changeset/1`
+
+def admin_changeset(user, attrs) do
+  user
+  |> cast(attrs, [:email, :password, :status])
+  |> validate_required([:email, :password, :status])
+  |> validate_inclusion(:status, ["Admin", "User"])
+end
+
 
   @doc """
   Confirms the account by setting `confirmed_at`.
